@@ -65,8 +65,7 @@ public class AccountsController {
         this.iAccountsService=accountsService;
     }
 
-    @Value("${build.version}")
-    private String buildVersion;
+
 
     @Operation(
             summary = "Create Account REST API",

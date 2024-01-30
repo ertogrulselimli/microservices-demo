@@ -57,7 +57,6 @@ public class AccountsServiceImpl  implements IAccountsService {
         log.info("Sending communication request fro the details {}",accountMsgDto);
         var result = streamBridge.send("sendCommunication-out-0", accountMsgDto);
         log.info("Is the communication request successfully processed?: {}",result);
-
     }
 
 
@@ -133,5 +132,16 @@ public class AccountsServiceImpl  implements IAccountsService {
         return true;
     }
 
-
+    @Override
+    public boolean updateCommunicationSw(Long accountNumber) {
+        boolean isUpdated = false;
+        if (accountNumber != null) {
+            Accounts accounts = accountsRepository.findById(accountNumber)
+                    .orElseThrow(() -> new ResourceNotFoundException("Account", "AccountNumber", accountNumber.toString()));
+            accounts.setCommunicationSw(true);
+            accountsRepository.save(accounts);
+            isUpdated = true;
+        }
+        return isUpdated;
+    }
 }

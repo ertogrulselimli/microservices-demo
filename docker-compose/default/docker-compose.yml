@@ -1,4 +1,20 @@
 services:
+  rabbit:
+    image: rabbitmq:3.12-management
+    hostname: rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    healthcheck:
+      test: rabbitmq-diagnostics check_port_connectivity
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 5s
+    extends:
+      file: common-config.yml
+      service: network-deploy-service
+
   keycloak:
     image: quay.io/keycloak/keycloak:22.0.1
     container_name: keycloak
@@ -221,7 +237,7 @@ services:
       file: common-config.yml
       service: network-deploy-service
   configserver:
-    image: "artoghrul/configserver:s12"
+    image: "artoghrul/configserver:v1.0"
     container_name: configserver-ms
     ports:
       - "8071:8071"
@@ -239,7 +255,7 @@ services:
 
 
   eurekaserver:
-    image: "artoghrul/eurekaserver:s12"
+    image: "artoghrul/eurekaserver:v1.0"
     container_name: eurekaserver-ms
     ports:
       - "8070:8070"
@@ -258,7 +274,7 @@ services:
 
 
   accounts:
-    image: "artoghrul/accounts:s12"
+    image: "artoghrul/accounts:v1.0"
     container_name: accounts-ms
     healthcheck:
       test: "curl --fail --silent localhost:8080/actuator/health/readiness | grep UP || exit 1"
@@ -266,8 +282,12 @@ services:
       timeout: 5s
       retries: 10
       start_period: 10s
+    depends_on:
+      rabbit:
+        condition: service_healthy
     environment:
       SPRING_APPLICATION_NAME: "accounts"
+      SPRING_RABBITMQ_HOST: "rabbit"
       OTEL_SERVICE_NAME: "accounts"
     extends:
       file: common-config.yml
@@ -275,7 +295,7 @@ services:
 
 
   cards:
-    image: "artoghrul/cards:s12"
+    image: "artoghrul/cards:v1.0"
     container_name: cards-ms
     healthcheck:
       test: "curl --fail --silent localhost:9000/actuator/health/readiness | grep UP || exit 1"
@@ -291,7 +311,7 @@ services:
       OTEL_SERVICE_NAME: "cards"
 
   gatewayserver:
-    image: "artoghrul/gatewayserver:s12"
+    image: "artoghrul/gatewayserver:v1.0"
     container_name: gatewayserver-ms
     ports:
       - "8072:8072"
@@ -314,6 +334,17 @@ services:
       SPRING_DATA_REDIS_TIMEOUT: 1s
       OTEL_SERVICE_NAME: "gatewayserver"
 
+  message:
+    image: "artoghrul/message-service:v1.0"
+    container_name: message-ms
+    depends_on:
+      rabbit:
+        condition: service_healthy
+    environment:
+      SPRING_RABBITMQ_HOST: "rabbit"
+    extends:
+      file: common-config.yml
+      service: network-deploy-service
 networks:
   easybank:
     driver: "bridge"

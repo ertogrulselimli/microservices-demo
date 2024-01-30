@@ -43,8 +43,8 @@ public class GatewayserverApplication {
                 .route(p->p.path("/togrul/cards/**")
                         .filters(f->f.rewritePath("/togrul/cards/(?<segment>.*)","/${segment}")
                                 .addResponseHeader("X-Response-Time",LocalDateTime.now().toString())
-                                        .requestRateLimiter(config -> config.setRateLimiter(redisRateLimiter())
-                                                .setKeyResolver(userKeyResolver()))
+                                        /*.requestRateLimiter(config -> config.setRateLimiter(redisRateLimiter())
+                                                .setKeyResolver(userKeyResolver()))*/
                                 /*.retry(retryConfig -> {
                                     retryConfig.setRetries(3)
                                             .setMethods(HttpMethod.GET)
@@ -68,10 +68,10 @@ public class GatewayserverApplication {
     }
 
 
-    @Bean
+/*    @Bean
     public RedisRateLimiter redisRateLimiter() {
         return new RedisRateLimiter(1,1,1);
-    }
+    }*/
 
     @Bean
     KeyResolver userKeyResolver() {
